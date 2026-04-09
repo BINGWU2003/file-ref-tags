@@ -10,6 +10,8 @@ import { ReferenceItem, ReferenceGroup } from './types/referenct';
 class ReferenceDataManager {
 	private references: ReferenceItem[] = [];
 	private groups: ReferenceGroup[] = []; // 新增：标签组数组
+	private lastUsedGroupId?: string;
+	private lastUsedGroupName?: string;
 	private storagePath: string;
 
 	constructor(context: vscode.ExtensionContext) {
@@ -35,17 +37,23 @@ class ReferenceDataManager {
 				// 如果解析的数据包含groups字段，则同时加载引用和分组
 				if (Array.isArray(parsedData.references) && Array.isArray(parsedData.groups)) {
 					this.references = parsedData.references;
-					this.groups = parsedData.groups;
+						this.groups = parsedData.groups;
+						this.lastUsedGroupId = typeof parsedData.lastUsedGroupId === 'string' ? parsedData.lastUsedGroupId : undefined;
+						this.lastUsedGroupName = typeof parsedData.lastUsedGroupName === 'string' ? parsedData.lastUsedGroupName : undefined;
 				} else {
 					// 向后兼容：如果数据格式是旧的数组格式
 					this.references = Array.isArray(parsedData) ? parsedData : [];
-					this.groups = [];
+						this.groups = [];
+						this.lastUsedGroupId = undefined;
+						this.lastUsedGroupName = undefined;
 				}
 			}
 		} catch (error) {
 			console.error('Failed to load references:', error);
 			this.references = [];
-			this.groups = [];
+				this.groups = [];
+				this.lastUsedGroupId = undefined;
+				this.lastUsedGroupName = undefined;
 		}
 	}
 
@@ -53,10 +61,12 @@ class ReferenceDataManager {
 	private saveReferences(): void {
 		try {
 			// 保存引用和分组数据
-			const dataToSave = {
-				references: this.references,
-				groups: this.groups
-			};
+				const dataToSave = {
+					references: this.references,
+					groups: this.groups,
+					lastUsedGroupId: this.lastUsedGroupId,
+					lastUsedGroupName: this.lastUsedGroupName
+				};
 			fs.writeFileSync(this.storagePath, JSON.stringify(dataToSave, null, 2), 'utf8');
 		} catch (error) {
 			console.error('Failed to save references:', error);
@@ -89,6 +99,46 @@ class ReferenceDataManager {
 		this.groups.push(newGroup);
 		this.saveReferences();
 		return newGroup;
+	}
+
+	findGroupById(id: string): ReferenceGroup | undefined {
+		return this.groups.find(g => g.id === id);
+	}
+
+	setLastUsedGroupById(groupId: string): void {
+		const group = this.findGroupById(groupId);
+		if (!group) {
+			return;
+		}
+		this.lastUsedGroupId = group.id;
+		this.lastUsedGroupName = group.name;
+		this.saveReferences();
+	}
+
+	getLastUsedGroupInfo(): { id?: string; name?: string } {
+		return {
+			id: this.lastUsedGroupId,
+			name: this.lastUsedGroupName
+		};
+	}
+
+	ensureLastUsedGroup(): ReferenceGroup | null {
+		if (this.lastUsedGroupId) {
+			const existingById = this.findGroupById(this.lastUsedGroupId);
+			if (existingById) {
+				return existingById;
+			}
+		}
+
+		if (!this.lastUsedGroupName) {
+			return null;
+		}
+
+		const recreated = this.addGroup(this.lastUsedGroupName);
+		this.lastUsedGroupId = recreated.id;
+		this.lastUsedGroupName = recreated.name;
+		this.saveReferences();
+		return recreated;
 	}
 
 	// 获取所有引用项
@@ -147,6 +197,7 @@ class ReferenceDataManager {
 
 	// 删除标签组
 	deleteGroup(id: string): void {
+		const deletedGroup = this.groups.find(g => g.id === id);
 		// 移除引用项中对已删除组的引用，将它们改为无分组
 		this.references = this.references.map(ref => {
 			if (ref.groupId === id) {
@@ -157,8 +208,12 @@ class ReferenceDataManager {
 			return ref;
 		});
 		// 删除组
-		this.groups = this.groups.filter(g => g.id !== id);
-		this.saveReferences();
+			this.groups = this.groups.filter(g => g.id !== id);
+			if (this.lastUsedGroupId === id) {
+				this.lastUsedGroupId = undefined;
+				this.lastUsedGroupName = deletedGroup?.name ?? this.lastUsedGroupName;
+			}
+			this.saveReferences();
 	}
 
 	// 更新引用项标题
@@ -824,6 +879,177 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
+	type GroupTargetMode = 'none' | 'lastUsed' | 'newGroup';
+
+	const registerCommand = (command: string, handler: (...args: unknown[]) => unknown) => {
+		context.subscriptions.push(vscode.commands.registerCommand(command, handler));
+	};
+
+	const getActiveEditor = (): vscode.TextEditor | undefined => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('没有打开的文件');
+			return undefined;
+		}
+		return editor;
+	};
+
+	const resolveTargetGroupId = async (mode: GroupTargetMode): Promise<string | undefined | null> => {
+		if (mode === 'none') {
+			return undefined;
+		}
+
+		if (mode === 'lastUsed') {
+			const lastUsedGroup = dataManager.ensureLastUsedGroup();
+			if (!lastUsedGroup) {
+				vscode.window.showWarningMessage('没有可用的上次使用分组，请先使用“添加到新分组”');
+				return null;
+			}
+			return lastUsedGroup.id;
+		}
+
+		const groupName = await vscode.window.showInputBox({
+			prompt: '请输入新分组名称',
+			placeHolder: '例如：认证模块',
+			validateInput: (value) => {
+				const trimmed = value.trim();
+				if (!trimmed) {
+					return '分组名称不能为空';
+				}
+				return null;
+			}
+		});
+
+		if (!groupName) {
+			return null;
+		}
+
+		const createdGroup = dataManager.addGroup(groupName.trim());
+		return createdGroup.id;
+	};
+
+	const addReferenceWithTarget = (
+		reference: Omit<ReferenceItem, 'id' | 'createdAt' | 'updatedAt'>,
+		targetGroupId?: string
+	): void => {
+		dataManager.addReference(targetGroupId ? { ...reference, groupId: targetGroupId } : reference);
+		if (targetGroupId) {
+			dataManager.setLastUsedGroupById(targetGroupId);
+		}
+		webviewViewProvider.notifyUpdate();
+	};
+
+	const addCurrentFile = async (mode: GroupTargetMode, successMessage: string) => {
+		const editor = getActiveEditor();
+		if (!editor) {
+			return;
+		}
+
+		const targetGroupId = await resolveTargetGroupId(mode);
+		if (targetGroupId === null) {
+			return;
+		}
+
+		const filePath = editor.document.uri.fsPath;
+		const fileName = path.basename(filePath);
+		addReferenceWithTarget({
+			type: 'file',
+			title: fileName,
+			filePath
+		}, targetGroupId ?? undefined);
+		vscode.window.showInformationMessage(successMessage);
+	};
+
+	const addFileAndSnippet = async (mode: GroupTargetMode, successMessage: string) => {
+		const editor = getActiveEditor();
+		if (!editor) {
+			return;
+		}
+
+		const selection = editor.selection;
+		if (selection.isEmpty) {
+			vscode.window.showErrorMessage('请先选中代码片段');
+			return;
+		}
+
+		const targetGroupId = await resolveTargetGroupId(mode);
+		if (targetGroupId === null) {
+			return;
+		}
+
+		const filePath = editor.document.uri.fsPath;
+		const snippet = editor.document.getText(selection);
+		const fileName = path.basename(filePath);
+		const snippetPreview = snippet.substring(0, 50) + (snippet.length > 50 ? '...' : '');
+		const title = `${fileName}: ${snippetPreview}`;
+
+		addReferenceWithTarget({
+			type: 'file-snippet',
+			title,
+			filePath,
+			snippet
+		}, targetGroupId ?? undefined);
+		vscode.window.showInformationMessage(successMessage);
+	};
+
+	const addGlobalUniqueSnippet = async (mode: GroupTargetMode, successMessage: string) => {
+		const editor = getActiveEditor();
+		if (!editor) {
+			return;
+		}
+
+		const selection = editor.selection;
+		if (selection.isEmpty) {
+			vscode.window.showErrorMessage('请先选中代码片段');
+			return;
+		}
+
+		const targetGroupId = await resolveTargetGroupId(mode);
+		if (targetGroupId === null) {
+			return;
+		}
+
+		const filePath = editor.document.uri.fsPath;
+		const snippet = editor.document.getText(selection);
+		const title = snippet.substring(0, 50) + (snippet.length > 50 ? '...' : '');
+
+		addReferenceWithTarget({
+			type: 'global-snippet',
+			title,
+			snippet,
+			targetFilePath: filePath
+		}, targetGroupId ?? undefined);
+		vscode.window.showInformationMessage(successMessage);
+	};
+
+	const addComment = async (mode: GroupTargetMode, successMessage: string) => {
+		const targetGroupId = await resolveTargetGroupId(mode);
+		if (targetGroupId === null) {
+			return;
+		}
+
+		const comment = await vscode.window.showInputBox({
+			prompt: '请输入注释内容',
+			placeHolder: '例如：重要的 API 函数',
+			validateInput: (value) => {
+				if (!value || value.trim().length === 0) {
+					return '注释内容不能为空';
+				}
+				return null;
+			}
+		});
+
+		if (!comment) {
+			return;
+		}
+
+		addReferenceWithTarget({
+			type: 'comment',
+			title: comment.trim()
+		}, targetGroupId ?? undefined);
+		vscode.window.showInformationMessage(successMessage);
+	};
+
 	// 注册添加当前文件到面板的命令
 	const addCurrentFileDisposable = vscode.commands.registerCommand('file-ref-tags.addCurrentFile', async () => {
 		const editor = vscode.window.activeTextEditor;
@@ -952,6 +1178,34 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(addCommentDisposable);
+
+	registerCommand('file-ref-tags.addCurrentFileToLastUsedGroup', () =>
+		addCurrentFile('lastUsed', '已添加当前文件到上次使用分组')
+	);
+	registerCommand('file-ref-tags.addCurrentFileToNewGroup', () =>
+		addCurrentFile('newGroup', '已添加当前文件到新分组')
+	);
+
+	registerCommand('file-ref-tags.addFileAndSnippetToLastUsedGroup', () =>
+		addFileAndSnippet('lastUsed', '已添加当前文件+选中的片段到上次使用分组')
+	);
+	registerCommand('file-ref-tags.addFileAndSnippetToNewGroup', () =>
+		addFileAndSnippet('newGroup', '已添加当前文件+选中的片段到新分组')
+	);
+
+	registerCommand('file-ref-tags.addGlobalUniqueSnippetToLastUsedGroup', () =>
+		addGlobalUniqueSnippet('lastUsed', '已添加当前选中的全局唯一片段到上次使用分组')
+	);
+	registerCommand('file-ref-tags.addGlobalUniqueSnippetToNewGroup', () =>
+		addGlobalUniqueSnippet('newGroup', '已添加当前选中的全局唯一片段到新分组')
+	);
+
+	registerCommand('file-ref-tags.addCommentToLastUsedGroup', () =>
+		addComment('lastUsed', '已添加用户注释到上次使用分组')
+	);
+	registerCommand('file-ref-tags.addCommentToNewGroup', () =>
+		addComment('newGroup', '已添加用户注释到新分组')
+	);
 
 	// 注册添加分组命令
 	const addGroupDisposable = vscode.commands.registerCommand('file-ref-tags.addGroup', async () => {

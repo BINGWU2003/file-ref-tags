@@ -2,7 +2,7 @@
   "name": "file-ref-tags",
   "displayName": "File Ref Tags",
   "description": "VSCode extension for managing and quickly accessing code references, allowing users to add files, code snippets, and comments to a reference panel for quick navigation.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "icon": "icon.png",
   "publisher": "LiRenTech",
   "repository": {
@@ -32,8 +32,28 @@
         "category": "FileRefTags"
       },
       {
+        "command": "file-ref-tags.addCurrentFileToLastUsedGroup",
+        "title": "添加当前文件到上次使用分组",
+        "category": "FileRefTags"
+      },
+      {
+        "command": "file-ref-tags.addCurrentFileToNewGroup",
+        "title": "添加当前文件到新分组",
+        "category": "FileRefTags"
+      },
+      {
         "command": "file-ref-tags.addFileAndSnippet",
         "title": "添加当前文件+选中的片段到面板",
+        "category": "FileRefTags"
+      },
+      {
+        "command": "file-ref-tags.addFileAndSnippetToLastUsedGroup",
+        "title": "添加当前文件+选中的片段到上次使用分组",
+        "category": "FileRefTags"
+      },
+      {
+        "command": "file-ref-tags.addFileAndSnippetToNewGroup",
+        "title": "添加当前文件+选中的片段到新分组",
         "category": "FileRefTags"
       },
       {
@@ -42,8 +62,28 @@
         "category": "FileRefTags"
       },
       {
+        "command": "file-ref-tags.addGlobalUniqueSnippetToLastUsedGroup",
+        "title": "添加当前选中的全局唯一片段到上次使用分组",
+        "category": "FileRefTags"
+      },
+      {
+        "command": "file-ref-tags.addGlobalUniqueSnippetToNewGroup",
+        "title": "添加当前选中的全局唯一片段到新分组",
+        "category": "FileRefTags"
+      },
+      {
         "command": "file-ref-tags.addComment",
         "title": "添加用户注释到面板",
+        "category": "FileRefTags"
+      },
+      {
+        "command": "file-ref-tags.addCommentToLastUsedGroup",
+        "title": "添加用户注释到上次使用分组",
+        "category": "FileRefTags"
+      },
+      {
+        "command": "file-ref-tags.addCommentToNewGroup",
+        "title": "添加用户注释到新分组",
         "category": "FileRefTags"
       },
       {
@@ -95,43 +135,75 @@
       "file-ref-tags.submenu": [
         {
           "command": "file-ref-tags.addCurrentFile",
-          "group": "file-ref-tags@1"
+          "group": "file-ref-tags.add-current@1"
+        },
+        {
+          "command": "file-ref-tags.addCurrentFileToLastUsedGroup",
+          "group": "file-ref-tags.add-current@2"
+        },
+        {
+          "command": "file-ref-tags.addCurrentFileToNewGroup",
+          "group": "file-ref-tags.add-current@3"
         },
         {
           "command": "file-ref-tags.addFileAndSnippet",
-          "group": "file-ref-tags@2"
+          "group": "file-ref-tags.add-file-snippet@1"
+        },
+        {
+          "command": "file-ref-tags.addFileAndSnippetToLastUsedGroup",
+          "group": "file-ref-tags.add-file-snippet@2"
+        },
+        {
+          "command": "file-ref-tags.addFileAndSnippetToNewGroup",
+          "group": "file-ref-tags.add-file-snippet@3"
         },
         {
           "command": "file-ref-tags.addGlobalUniqueSnippet",
-          "group": "file-ref-tags@3"
+          "group": "file-ref-tags.add-global-unique@1"
+        },
+        {
+          "command": "file-ref-tags.addGlobalUniqueSnippetToLastUsedGroup",
+          "group": "file-ref-tags.add-global-unique@2"
+        },
+        {
+          "command": "file-ref-tags.addGlobalUniqueSnippetToNewGroup",
+          "group": "file-ref-tags.add-global-unique@3"
         },
         {
           "command": "file-ref-tags.addComment",
-          "group": "file-ref-tags@4"
+          "group": "file-ref-tags.add-comment@1"
+        },
+        {
+          "command": "file-ref-tags.addCommentToLastUsedGroup",
+          "group": "file-ref-tags.add-comment@2"
+        },
+        {
+          "command": "file-ref-tags.addCommentToNewGroup",
+          "group": "file-ref-tags.add-comment@3"
         },
         {
           "command": "file-ref-tags.addGroup",
-          "group": "file-ref-tags@5"
+          "group": "file-ref-tags.group@1"
         },
         {
           "command": "file-ref-tags.copyLinkSnippetOnly",
-          "group": "file-ref-tags@6"
+          "group": "file-ref-tags.copy@1"
         },
         {
           "command": "file-ref-tags.copyLinkFileNameOnly",
-          "group": "file-ref-tags@7"
+          "group": "file-ref-tags.copy@2"
         },
         {
           "command": "file-ref-tags.copyLinkFileNameAndSnippet",
-          "group": "file-ref-tags@8"
+          "group": "file-ref-tags.copy@3"
         },
         {
           "command": "file-ref-tags.copyLinkParentDirAndSnippet",
-          "group": "file-ref-tags@9"
+          "group": "file-ref-tags.copy@4"
         },
         {
           "command": "file-ref-tags.copyLinkWorkspacePathAndSnippet",
-          "group": "file-ref-tags@10"
+          "group": "file-ref-tags.copy@5"
         }
       ]
     },
