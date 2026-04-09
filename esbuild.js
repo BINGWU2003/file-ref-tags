@@ -2,6 +2,7 @@ const esbuild = require("esbuild");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
+const npm = process.argv.includes('--npm');
 
 /**
  * @type {import('esbuild').Plugin}
@@ -24,7 +25,8 @@ const esbuildProblemMatcherPlugin = {
 };
 
 async function main() {
-	const ctx = await esbuild.context({
+	// VSCode 扩展：CJS 格式，排除 vscode 模块
+	const extensionCtx = await esbuild.context({
 		entryPoints: [
 			'src/extension.ts'
 		],
@@ -38,15 +40,55 @@ async function main() {
 		external: ['vscode'],
 		logLevel: 'silent',
 		plugins: [
-			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,
 		],
 	});
+
+	// MCP Server：ESM 格式（@modelcontextprotocol/sdk 为纯 ESM 包）
+	const mcpCtx = await esbuild.context({
+		entryPoints: [
+			'src/mcp/server.ts'
+		],
+		bundle: true,
+		format: 'esm',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'node',
+		outfile: 'dist/mcp/server.mjs',
+		logLevel: 'silent',
+		plugins: [
+			esbuildProblemMatcherPlugin,
+		],
+	});
+
+	// npm 发布专用：单文件打包，依赖内嵌，输出到 mcp-server/dist/
+	const mcpNpmCtx = npm ? await esbuild.context({
+		entryPoints: ['src/mcp/server.ts'],
+		bundle: true,
+		format: 'esm',
+		minify: production,
+		sourcemap: false,
+		platform: 'node',
+		outfile: 'mcp-server/dist/server.mjs',
+		// 不设 external，将所有依赖打包进单文件
+		banner: { js: '#!/usr/bin/env node' },
+		logLevel: 'silent',
+		plugins: [esbuildProblemMatcherPlugin],
+	}) : null;
+
 	if (watch) {
-		await ctx.watch();
+		await extensionCtx.watch();
+		await mcpCtx.watch();
 	} else {
-		await ctx.rebuild();
-		await ctx.dispose();
+		await extensionCtx.rebuild();
+		await extensionCtx.dispose();
+		await mcpCtx.rebuild();
+		await mcpCtx.dispose();
+		if (mcpNpmCtx) {
+			await mcpNpmCtx.rebuild();
+			await mcpNpmCtx.dispose();
+		}
 	}
 }
 
