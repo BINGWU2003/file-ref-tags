@@ -1,4 +1,4 @@
-import { McpTool, McpToolResult, WORKSPACE_PATH_SCHEMA } from "./types.js";
+import { IDE_SCHEMA, McpTool, McpToolResult, WORKSPACE_PATH_SCHEMA } from "./types.js";
 import { ReferencesData, formatSnippetItem } from "../utils.js";
 import { ReferenceItem } from "../../types/referenct.js";
 
@@ -11,6 +11,7 @@ export const searchSnippetsTool: McpTool = {
       type: "object",
       properties: {
         workspacePath: WORKSPACE_PATH_SCHEMA,
+        ide: IDE_SCHEMA,
         query: {
           type: "string",
           description: "搜索关键词，不区分大小写，同时匹配标题和片段内容。",

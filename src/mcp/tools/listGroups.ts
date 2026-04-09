@@ -1,4 +1,4 @@
-import { McpTool, McpToolResult, WORKSPACE_PATH_SCHEMA } from "./types.js";
+import { IDE_SCHEMA, McpTool, McpToolResult, WORKSPACE_PATH_SCHEMA } from "./types.js";
 import { ReferencesData } from "../utils.js";
 
 export const listGroupsTool: McpTool = {
@@ -9,6 +9,7 @@ export const listGroupsTool: McpTool = {
       type: "object",
       properties: {
         workspacePath: WORKSPACE_PATH_SCHEMA,
+        ide: IDE_SCHEMA,
       },
       required: ["workspacePath"],
     },

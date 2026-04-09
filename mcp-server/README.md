@@ -55,6 +55,23 @@ npm install -g file-ref-tags-mcp
 
 所有工具都需要传入 `workspacePath` 参数（项目根目录的绝对路径），用于定位该工作区对应的插件数据文件。
 
+通用可选参数：
+
+- `ide`：临时指定本次调用从哪个 IDE 读取数据，会覆盖工作区配置文件
+  - `auto`：同时搜索 VSCode 与 Cursor 的存储目录
+  - `vscode`：仅搜索 VSCode 存储目录
+  - `cursor`：仅搜索 Cursor 存储目录
+
+示例：
+
+```json
+{
+  "workspacePath": "D:\\code\\file-ref-tags",
+  "groupName": "分组1",
+  "ide": "cursor"
+}
+```
+
 ### `list_groups`
 
 列出指定项目中所有分组的名称、ID 和引用项数量。
@@ -78,6 +95,12 @@ get_group_snippets({
 ```
 
 每个片段返回：文件路径、行号范围（如第 12-18 行）、片段内容。
+
+`includeAllTypes` 参数说明：
+
+- `false`（默认）：只返回代码片段类型（`file-snippet`、`global-snippet`）
+- `true`：额外包含 `file`、`comment` 类型的引用项
+- 当返回 `file` / `comment` 类型时，会返回条目基础信息（标题、类型、文件路径或注释内容），不包含代码块与行号定位
 
 ---
 
@@ -105,6 +128,26 @@ search_snippets({
 
 如果不记得片段在哪个分组，可以让 Agent 搜索：
    > "找一下我之前保存的关于 token 校验的代码"
+
+## IDE 配置（VSCode / Cursor）
+
+可在每个工作区通过以下文件配置 IDE：
+
+`<workspace>/.vscode/file-ref-tags.json`
+
+示例：
+
+```json
+{
+  "ide": "cursor"
+}
+```
+
+可选值：
+
+- `auto`（默认）：同时搜索 VSCode 与 Cursor 的存储目录
+- `vscode`：仅搜索 VSCode 存储目录
+- `cursor`：仅搜索 Cursor 存储目录
 
 ## License
 

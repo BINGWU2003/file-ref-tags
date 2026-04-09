@@ -39,7 +39,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   let data;
   try {
-    data = loadData(workspacePath);
+    data = loadData(workspacePath, typedArgs.ide);
   } catch (err) {
     return {
       content: [{ type: "text", text: `错误：${(err as Error).message}` }],

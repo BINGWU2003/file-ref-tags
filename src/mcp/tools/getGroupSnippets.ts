@@ -1,4 +1,4 @@
-import { McpTool, McpToolResult, WORKSPACE_PATH_SCHEMA } from "./types.js";
+import { IDE_SCHEMA, McpTool, McpToolResult, WORKSPACE_PATH_SCHEMA } from "./types.js";
 import { ReferencesData, formatSnippetItem } from "../utils.js";
 import { ReferenceItem } from "../../types/referenct.js";
 
@@ -11,6 +11,7 @@ export const getGroupSnippetsTool: McpTool = {
       type: "object",
       properties: {
         workspacePath: WORKSPACE_PATH_SCHEMA,
+        ide: IDE_SCHEMA,
         groupName: {
           type: "string",
           description: "要查询的分组名称。传入空字符串或不传时，返回未分配分组的片段。",
