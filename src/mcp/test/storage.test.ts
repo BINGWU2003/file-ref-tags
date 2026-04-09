@@ -139,21 +139,34 @@ suite("MCP Storage - ide config", () => {
     assert.strictEqual(fromConfig.references[0].title, "vscode-snippet");
 
     const fromArg = loadData(workspacePath, "cursor");
-    assert.strictEqual(fromArg.references[0].title, "cursor-snippet");
+    assert.strictEqual(fromArg.references[0].title, "vscode-snippet");
   });
 
-  test("未传 ide 且缺少配置文件时抛出明确错误", () => {
+  test("未传 ide 且无配置文件时默认读取 vscode", () => {
     const root = createIsolatedRoot();
     setupUserEnv(root);
     const workspacePath = path.join(root, "workspace-c");
+    fs.mkdirSync(workspacePath, { recursive: true });
+
+    writeWorkspaceStorageEntry(workspacePath, "vscode", "vscode-default-snippet");
+
+    const data = loadData(workspacePath);
+    assert.strictEqual(data.references.length, 1);
+    assert.strictEqual(data.references[0].title, "vscode-default-snippet");
+  });
+
+  test("未传 ide 且无配置文件时，vscode 不存在则报错", () => {
+    const root = createIsolatedRoot();
+    setupUserEnv(root);
+    const workspacePath = path.join(root, "workspace-c2");
     fs.mkdirSync(workspacePath, { recursive: true });
 
     assert.throws(
       () => loadData(workspacePath),
       (err) =>
         err instanceof Error &&
-        err.message.includes(".vscode") &&
-        err.message.includes("file-ref-tags.json")
+        err.message.includes("vscode") &&
+        err.message.includes("workspaceStorage")
     );
   });
 

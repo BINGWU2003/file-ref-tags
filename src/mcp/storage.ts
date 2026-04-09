@@ -49,11 +49,18 @@ function cursorUserDir(): string {
 }
 
 function parseIdeOption(raw: unknown): IdeOption {
-  if (typeof raw !== "string" || raw.trim() === "") {
+  if (typeof raw === "undefined" || raw === null) {
     return "auto";
   }
 
+  if (typeof raw !== "string") {
+    throw new Error(`不支持的 ide 参数: "${String(raw)}"。可选值: auto | vscode | cursor`);
+  }
+
   const value = raw.trim().toLowerCase();
+  if (value === "") {
+    return "auto";
+  }
   if (value === "auto") {
     return "auto";
   }
@@ -136,24 +143,17 @@ function readIdeOptionFromWorkspaceConfig(workspacePath: string): IdeOption | un
 }
 
 function resolveIdeOption(workspacePath: string, ideArg?: unknown): IdeOption {
-  if (typeof ideArg !== "undefined" && ideArg !== null && ideArg !== "") {
-    return parseIdeOption(ideArg);
-  }
-
   const configIde = readIdeOptionFromWorkspaceConfig(workspacePath);
   if (configIde) {
     return configIde;
   }
 
-  const configPath = path.join(workspacePath, WORKSPACE_CONFIG_RELATIVE_PATH);
-  throw new Error(
-    `未提供 ide 参数，且未找到配置文件 "${configPath}"。\n` +
-      `请新增该文件并配置：\n` +
-      `{\n` +
-      `  "ide": "cursor"\n` +
-      `}\n` +
-      `可选值: auto | vscode | cursor`
-  );
+  if (typeof ideArg !== "undefined" && ideArg !== null && ideArg !== "") {
+    return parseIdeOption(ideArg);
+  }
+
+  // 无显式参数且无工作区配置时，按默认规则仅使用 VSCode 存储目录
+  return "vscode";
 }
 
 function findReferencesJson(
@@ -225,7 +225,7 @@ export function loadData(workspacePath: string, ide?: unknown): ReferencesData {
         `\n请确认：\n` +
         `  1. 该路径曾在对应 IDE 中以工作区形式打开过\n` +
         `  2. file-ref-tags 扩展已安装并至少启动过一次\n` +
-        `  3. 如需临时覆盖，可在 MCP 调用中传 ide: "cursor" 或 ide: "vscode"`
+        `  3. 如需指定 IDE，建议在工作区配置文件 ".vscode/file-ref-tags.json" 中设置 ide`
     );
   }
 

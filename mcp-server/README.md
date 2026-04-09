@@ -57,10 +57,11 @@ npm install -g file-ref-tags-mcp
 
 通用可选参数：
 
-- `ide`：临时指定本次调用从哪个 IDE 读取数据，会覆盖工作区配置文件
+- `ide`：可选，仅在工作区未配置时用于指定本次调用读取哪个 IDE
   - `auto`：同时搜索 VSCode 与 Cursor 的存储目录
   - `vscode`：仅搜索 VSCode 存储目录
   - `cursor`：仅搜索 Cursor 存储目录
+- IDE 识别优先级：`<workspace>/.vscode/file-ref-tags.json` > 工具参数 `ide` > 默认 `vscode`
 
 示例：
 
@@ -145,9 +146,11 @@ search_snippets({
 
 可选值：
 
-- `auto`（默认）：同时搜索 VSCode 与 Cursor 的存储目录
+- `auto`：同时搜索 VSCode 与 Cursor 的存储目录
 - `vscode`：仅搜索 VSCode 存储目录
 - `cursor`：仅搜索 Cursor 存储目录
+
+如果工作区下存在 `.vscode/file-ref-tags.json`，将始终按配置文件中的 `ide` 读取；仅在配置文件不存在时，才使用工具参数 `ide`。当两者都未提供时，默认使用 `vscode`。
 
 ## License
 

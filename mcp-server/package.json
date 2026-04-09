@@ -1,6 +1,6 @@
 {
   "name": "file-ref-tags-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for file-ref-tags VSCode extension. Allows AI agents to query code snippets saved in the extension by group or keyword.",
   "type": "module",
   "bin": {
