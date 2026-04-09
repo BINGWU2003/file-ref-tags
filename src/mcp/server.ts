@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * File Ref Tags MCP Server
  *

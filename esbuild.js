@@ -56,6 +56,7 @@ async function main() {
 		sourcesContent: false,
 		platform: 'node',
 		outfile: 'dist/mcp/server.mjs',
+		banner: { js: '#!/usr/bin/env node' },
 		logLevel: 'silent',
 		plugins: [
 			esbuildProblemMatcherPlugin,
