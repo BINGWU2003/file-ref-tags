@@ -115,6 +115,12 @@
         "command": "file-ref-tags.copyLinkWorkspacePathAndSnippet",
         "title": "复制链接（项目级路径+代码片段）",
         "category": "FileRefTags"
+      },
+      {
+        "command": "file-ref-tags.openSettings",
+        "title": "设置",
+        "icon": "$(settings-gear)",
+        "category": "FileRefTags"
       }
     ],
     "menus": {
@@ -130,55 +136,72 @@
           "command": "file-ref-tags.addGroup",
           "when": "view == file-ref-tags.list-view",
           "group": "navigation"
+        },
+        {
+          "command": "file-ref-tags.openSettings",
+          "when": "view == file-ref-tags.list-view",
+          "group": "navigation"
         }
       ],
       "file-ref-tags.submenu": [
         {
           "command": "file-ref-tags.addCurrentFile",
+          "when": "config.file-ref-tags.showAddCurrentFileCommands",
           "group": "file-ref-tags.add-current@1"
         },
         {
           "command": "file-ref-tags.addCurrentFileToLastUsedGroup",
+          "when": "config.file-ref-tags.showAddCurrentFileCommands",
           "group": "file-ref-tags.add-current@2"
         },
         {
           "command": "file-ref-tags.addCurrentFileToNewGroup",
+          "when": "config.file-ref-tags.showAddCurrentFileCommands",
           "group": "file-ref-tags.add-current@3"
         },
         {
           "command": "file-ref-tags.addFileAndSnippet",
+          "when": "config.file-ref-tags.showAddSnippetCommands",
           "group": "file-ref-tags.add-file-snippet@1"
         },
         {
           "command": "file-ref-tags.addFileAndSnippetToLastUsedGroup",
+          "when": "config.file-ref-tags.showAddSnippetCommands",
           "group": "file-ref-tags.add-file-snippet@2"
         },
         {
           "command": "file-ref-tags.addFileAndSnippetToNewGroup",
+          "when": "config.file-ref-tags.showAddSnippetCommands",
           "group": "file-ref-tags.add-file-snippet@3"
         },
         {
           "command": "file-ref-tags.addGlobalUniqueSnippet",
+          "when": "config.file-ref-tags.showGlobalUniqueCommands",
           "group": "file-ref-tags.add-global-unique@1"
         },
         {
           "command": "file-ref-tags.addGlobalUniqueSnippetToLastUsedGroup",
+          "when": "config.file-ref-tags.showGlobalUniqueCommands",
           "group": "file-ref-tags.add-global-unique@2"
         },
         {
           "command": "file-ref-tags.addGlobalUniqueSnippetToNewGroup",
+          "when": "config.file-ref-tags.showGlobalUniqueCommands",
           "group": "file-ref-tags.add-global-unique@3"
         },
         {
           "command": "file-ref-tags.addComment",
+          "when": "config.file-ref-tags.showAddCommentCommands",
           "group": "file-ref-tags.add-comment@1"
         },
         {
           "command": "file-ref-tags.addCommentToLastUsedGroup",
+          "when": "config.file-ref-tags.showAddCommentCommands",
           "group": "file-ref-tags.add-comment@2"
         },
         {
           "command": "file-ref-tags.addCommentToNewGroup",
+          "when": "config.file-ref-tags.showAddCommentCommands",
           "group": "file-ref-tags.add-comment@3"
         },
         {
@@ -187,22 +210,27 @@
         },
         {
           "command": "file-ref-tags.copyLinkSnippetOnly",
+          "when": "config.file-ref-tags.showCopyLinkCommands",
           "group": "file-ref-tags.copy@1"
         },
         {
           "command": "file-ref-tags.copyLinkFileNameOnly",
+          "when": "config.file-ref-tags.showCopyLinkCommands",
           "group": "file-ref-tags.copy@2"
         },
         {
           "command": "file-ref-tags.copyLinkFileNameAndSnippet",
+          "when": "config.file-ref-tags.showCopyLinkCommands",
           "group": "file-ref-tags.copy@3"
         },
         {
           "command": "file-ref-tags.copyLinkParentDirAndSnippet",
+          "when": "config.file-ref-tags.showCopyLinkCommands",
           "group": "file-ref-tags.copy@4"
         },
         {
           "command": "file-ref-tags.copyLinkWorkspacePathAndSnippet",
+          "when": "config.file-ref-tags.showCopyLinkCommands",
           "group": "file-ref-tags.copy@5"
         }
       ]
@@ -236,6 +264,36 @@
           "contextualTitle": "File Ref Tags"
         }
       ]
+    },
+    "configuration": {
+      "title": "File Ref Tags",
+      "properties": {
+        "file-ref-tags.showAddCurrentFileCommands": {
+          "type": "boolean",
+          "default": true,
+          "description": "在右键菜单中显示「添加当前文件」相关命令"
+        },
+        "file-ref-tags.showAddSnippetCommands": {
+          "type": "boolean",
+          "default": true,
+          "description": "在右键菜单中显示「添加文件+代码片段」相关命令"
+        },
+        "file-ref-tags.showGlobalUniqueCommands": {
+          "type": "boolean",
+          "default": true,
+          "description": "在右键菜单中显示「添加全局唯一片段」相关命令"
+        },
+        "file-ref-tags.showAddCommentCommands": {
+          "type": "boolean",
+          "default": true,
+          "description": "在右键菜单中显示「添加用户注释」相关命令"
+        },
+        "file-ref-tags.showCopyLinkCommands": {
+          "type": "boolean",
+          "default": true,
+          "description": "在右键菜单中显示「复制链接」相关命令"
+        }
+      }
     },
     "keybindings": [
       {

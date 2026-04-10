@@ -879,6 +879,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
+	context.subscriptions.push(vscode.commands.registerCommand('file-ref-tags.openSettings', () => {
+		vscode.commands.executeCommand('workbench.action.openSettings', '@ext:LiRenTech.file-ref-tags');
+	}));
+
 	type GroupTargetMode = 'none' | 'lastUsed' | 'newGroup';
 
 	const registerCommand = (command: string, handler: (...args: unknown[]) => unknown) => {
