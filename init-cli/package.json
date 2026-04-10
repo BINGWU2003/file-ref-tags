@@ -1,0 +1,32 @@
+{
+  "name": "file-ref-tags-init",
+  "version": "1.0.1",
+  "description": "Interactive CLI to initialize .vscode/file-ref-tags.json for the file-ref-tags MCP server.",
+  "type": "module",
+  "bin": {
+    "file-ref-tags-init": "./dist/init.mjs"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "prepublishOnly": "cd .. && node esbuild.js --production --npm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LiRenTech/file-ref-tags.git"
+  },
+  "keywords": [
+    "mcp",
+    "vscode",
+    "cursor",
+    "file-ref-tags",
+    "cli",
+    "init"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

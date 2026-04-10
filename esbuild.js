@@ -61,7 +61,7 @@ async function main() {
 
 	// MCP Init CLI：引导用户初始化 .vscode/file-ref-tags.json
 	const mcpInitCtx = await esbuild.context({
-		entryPoints: ['src/mcp/init.ts'],
+		entryPoints: ['src/cli/init.ts'],
 		bundle: true,
 		format: 'esm',
 		minify: production,
@@ -92,8 +92,8 @@ async function main() {
 	}) : null;
 	const mcpInitNpmCtx = npm ? await esbuild.context({
 		...npmBase,
-		entryPoints: ['src/mcp/init.ts'],
-		outfile: 'mcp-server/dist/init.mjs',
+		entryPoints: ['src/cli/init.ts'],
+		outfile: 'init-cli/dist/init.mjs',
 	}) : null;
 
 	if (watch) {

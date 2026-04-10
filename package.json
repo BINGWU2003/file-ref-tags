@@ -323,7 +323,8 @@
     "test": "vscode-test",
     "init:workspace": "node dist/mcp/init.mjs",
     "build:mcp": "pnpm run check-types && pnpm run lint && node esbuild.js --production --npm",
-    "publish:mcp": "pnpm run build:mcp && cd mcp-server && npm publish --access public"
+    "publish:mcp": "pnpm run build:mcp && cd mcp-server && npm publish --access public --userconfig ../.npmrc",
+    "publish:init": "pnpm run build:mcp && cd init-cli && npm publish --access public --userconfig ../.npmrc"
   },
   "devDependencies": {
     "@clack/prompts": "^1.2.0",

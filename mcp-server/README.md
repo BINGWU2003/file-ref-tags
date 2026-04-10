@@ -57,7 +57,7 @@ MCP Server 需要知道从哪个 IDE 的工作区存储中读取数据（VSCode 
 
 ### 方式一：初始化脚本（推荐）
 
-使用内置的交互式 CLI 引导生成配置文件：
+使用 [file-ref-tags-init](https://www.npmjs.com/package/file-ref-tags-init) 交互式 CLI 引导生成配置文件：
 
 ```bash
 # 初始化当前目录
