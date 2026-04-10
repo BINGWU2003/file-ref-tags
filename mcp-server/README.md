@@ -51,27 +51,43 @@ npm install -g file-ref-tags-mcp
 }
 ```
 
-## 可用工具
+## IDE 配置
 
-所有工具都需要传入 `workspacePath` 参数（项目根目录的绝对路径），用于定位该工作区对应的插件数据文件。
+MCP Server 需要知道从哪个 IDE 的工作区存储中读取数据（VSCode 和 Cursor 的存储路径不同）。
 
-通用可选参数：
+### 方式一：初始化脚本（推荐）
 
-- `ide`：可选，仅在工作区未配置时用于指定本次调用读取哪个 IDE
-  - `auto`：同时搜索 VSCode 与 Cursor 的存储目录
-  - `vscode`：仅搜索 VSCode 存储目录
-  - `cursor`：仅搜索 Cursor 存储目录
-- IDE 识别优先级：`<workspace>/.vscode/file-ref-tags.json` > 工具参数 `ide` > 默认 `vscode`
+使用内置的交互式 CLI 引导生成配置文件：
 
-示例：
+```bash
+# 初始化当前目录
+npx file-ref-tags-init
+
+# 或指定路径
+npx file-ref-tags-init /path/to/project
+```
+
+运行后按箭头键选择 IDE，Enter 确认，自动写入 `.vscode/file-ref-tags.json`。
+
+### 方式二：手动创建配置文件
+
+在项目根目录手动创建 `.vscode/file-ref-tags.json`：
 
 ```json
 {
-  "workspacePath": "D:\\code\\file-ref-tags",
-  "groupName": "分组1",
   "ide": "cursor"
 }
 ```
+
+可选值：`vscode` | `cursor` | `auto`（优先 VSCode，找不到再找 Cursor）
+
+**优先级**：工作区配置文件 > 工具参数 `ide` > 默认 `vscode`
+
+## 可用工具
+
+所有工具都需要传入 `workspacePath` 参数（项目根目录的绝对路径）。
+
+所有工具支持可选参数 `ide`（`vscode` | `cursor` | `auto`），仅在工作区未配置 `.vscode/file-ref-tags.json` 时生效，用于临时指定本次调用读取哪个 IDE 的存储目录。
 
 ### `list_groups`
 
@@ -122,35 +138,13 @@ search_snippets({
 
 典型工作流：
 
-1. 在 VSCode 中编写代码时，用 **File Ref Tags** 将重要代码片段保存到命名分组中
+1. 在 VSCode / Cursor 中编写代码时，用 **File Ref Tags** 将重要代码片段保存到命名分组中
 2. 开始 AI 对话时，告诉 Agent 要参考哪个分组：
    > "参考「认证模块」分组，帮我重构登录流程"
 3. Agent 调用 `get_group_snippets` 加载片段，以此为上下文进行回答
 
 如果不记得片段在哪个分组，可以让 Agent 搜索：
    > "找一下我之前保存的关于 token 校验的代码"
-
-## IDE 配置（VSCode / Cursor）
-
-可在每个工作区通过以下文件配置 IDE：
-
-`<workspace>/.vscode/file-ref-tags.json`
-
-示例：
-
-```json
-{
-  "ide": "cursor"
-}
-```
-
-可选值：
-
-- `auto`：同时搜索 VSCode 与 Cursor 的存储目录
-- `vscode`：仅搜索 VSCode 存储目录
-- `cursor`：仅搜索 Cursor 存储目录
-
-如果工作区下存在 `.vscode/file-ref-tags.json`，将始终按配置文件中的 `ide` 读取；仅在配置文件不存在时，才使用工具参数 `ide`。当两者都未提供时，默认使用 `vscode`。
 
 ## License
 

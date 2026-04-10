@@ -321,10 +321,12 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vscode-test",
+    "init:workspace": "node dist/mcp/init.mjs",
     "build:mcp": "pnpm run check-types && pnpm run lint && node esbuild.js --production --npm",
     "publish:mcp": "pnpm run build:mcp && cd mcp-server && npm publish --access public"
   },
   "devDependencies": {
+    "@clack/prompts": "^1.2.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@types/jest": "^30.0.0",
     "@types/mocha": "^10.0.10",

@@ -46,9 +46,7 @@ async function main() {
 
 	// MCP Server：ESM 格式（@modelcontextprotocol/sdk 为纯 ESM 包）
 	const mcpCtx = await esbuild.context({
-		entryPoints: [
-			'src/mcp/server.ts'
-		],
+		entryPoints: ['src/mcp/server.ts'],
 		bundle: true,
 		format: 'esm',
 		minify: production,
@@ -58,37 +56,62 @@ async function main() {
 		outfile: 'dist/mcp/server.mjs',
 		banner: { js: '#!/usr/bin/env node' },
 		logLevel: 'silent',
-		plugins: [
-			esbuildProblemMatcherPlugin,
-		],
+		plugins: [esbuildProblemMatcherPlugin],
+	});
+
+	// MCP Init CLI：引导用户初始化 .vscode/file-ref-tags.json
+	const mcpInitCtx = await esbuild.context({
+		entryPoints: ['src/mcp/init.ts'],
+		bundle: true,
+		format: 'esm',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'node',
+		outfile: 'dist/mcp/init.mjs',
+		banner: { js: '#!/usr/bin/env node' },
+		logLevel: 'silent',
+		plugins: [esbuildProblemMatcherPlugin],
 	});
 
 	// npm 发布专用：单文件打包，依赖内嵌，输出到 mcp-server/dist/
-	const mcpNpmCtx = npm ? await esbuild.context({
-		entryPoints: ['src/mcp/server.ts'],
+	const npmBase = {
 		bundle: true,
 		format: 'esm',
 		minify: production,
 		sourcemap: false,
 		platform: 'node',
-		outfile: 'mcp-server/dist/server.mjs',
-		// 不设 external，将所有依赖打包进单文件
 		banner: { js: '#!/usr/bin/env node' },
 		logLevel: 'silent',
 		plugins: [esbuildProblemMatcherPlugin],
+	};
+	const mcpNpmCtx = npm ? await esbuild.context({
+		...npmBase,
+		entryPoints: ['src/mcp/server.ts'],
+		outfile: 'mcp-server/dist/server.mjs',
+	}) : null;
+	const mcpInitNpmCtx = npm ? await esbuild.context({
+		...npmBase,
+		entryPoints: ['src/mcp/init.ts'],
+		outfile: 'mcp-server/dist/init.mjs',
 	}) : null;
 
 	if (watch) {
 		await extensionCtx.watch();
 		await mcpCtx.watch();
+		await mcpInitCtx.watch();
 	} else {
 		await extensionCtx.rebuild();
 		await extensionCtx.dispose();
 		await mcpCtx.rebuild();
 		await mcpCtx.dispose();
+		await mcpInitCtx.rebuild();
+		await mcpInitCtx.dispose();
 		if (mcpNpmCtx) {
 			await mcpNpmCtx.rebuild();
 			await mcpNpmCtx.dispose();
+			await mcpInitNpmCtx.rebuild();
+			await mcpInitNpmCtx.dispose();
 		}
 	}
 }
