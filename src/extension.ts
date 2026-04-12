@@ -216,6 +216,17 @@ class ReferenceDataManager {
 			this.saveReferences();
 	}
 
+	deleteGroupWithItems(id: string): void {
+		const deletedGroup = this.groups.find(g => g.id === id);
+		this.references = this.references.filter(ref => ref.groupId !== id);
+		this.groups = this.groups.filter(g => g.id !== id);
+		if (this.lastUsedGroupId === id) {
+			this.lastUsedGroupId = undefined;
+			this.lastUsedGroupName = deletedGroup?.name ?? this.lastUsedGroupName;
+		}
+		this.saveReferences();
+	}
+
 	// 更新引用项标题
 	updateReferenceTitle(id: string, title: string): void {
 		const reference = this.references.find(r => r.id === id);
@@ -316,6 +327,10 @@ class FileRefTagsViewProvider implements vscode.WebviewViewProvider {
 						return;
 					case 'deleteGroup':
 						this._dataManager.deleteGroup(message.id);
+						this._sendReferences();
+						return;
+					case 'deleteGroupWithItems':
+						this._dataManager.deleteGroupWithItems(message.id);
 						this._sendReferences();
 						return;
 					case 'updateReferenceGroup':

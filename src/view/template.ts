@@ -207,6 +207,19 @@ export const TEMPLATE = `<!DOCTYPE html>
             color: var(--vscode-errorForeground, #f48771);
             background-color: var(--vscode-toolbar-hoverBackground, #2a2d2e);
         }
+        .delete-with-items-btn {
+            background: none;
+            border: none;
+            color: var(--vscode-descriptionForeground, #858585);
+            cursor: pointer;
+            font-size: 11px;
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+        .delete-with-items-btn:hover {
+            color: var(--vscode-errorForeground, #f48771);
+            background-color: var(--vscode-toolbar-hoverBackground, #2a2d2e);
+        }
         /* 弹窗样式 */
         .modal {
             display: none;
@@ -695,14 +708,26 @@ export const TEMPLATE = `<!DOCTYPE html>
                 const groupActions = document.createElement('div');
                 groupActions.className = 'group-actions';
 
+                const deleteGroupWithItemsBtn = document.createElement('button');
+                deleteGroupWithItemsBtn.className = 'delete-with-items-btn';
+                deleteGroupWithItemsBtn.textContent = '🗑';
+                deleteGroupWithItemsBtn.title = '删除分组及其所有片段';
+                deleteGroupWithItemsBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    vscode.postMessage({ command: 'deleteGroupWithItems', id: group.id });
+                };
+
                 const deleteGroupBtn = document.createElement('button');
                 deleteGroupBtn.className = 'delete-btn';
                 deleteGroupBtn.textContent = '×';
+                deleteGroupBtn.title = '删除分组（片段保留）';
                 deleteGroupBtn.onclick = (e) => {
+                    e.stopPropagation();
                     vscode.postMessage({ command: 'deleteGroup', id: group.id });
                 };
 
                 groupActions.appendChild(deleteGroupBtn);
+                groupActions.appendChild(deleteGroupWithItemsBtn);
                 groupHeader.appendChild(groupTitle);
                 groupHeader.appendChild(groupActions);
                 groupLi.appendChild(groupHeader);
