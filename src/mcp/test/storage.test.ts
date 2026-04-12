@@ -53,12 +53,9 @@ function writeWorkspaceStorageEntry(
   const workspaceStorageDir = path.join(getIdeUserDir(ide), "workspaceStorage", hash);
   fs.mkdirSync(workspaceStorageDir, { recursive: true });
 
-  const workspaceMeta = {
-    folder: toFileUri(workspacePath),
-  };
   fs.writeFileSync(
     path.join(workspaceStorageDir, "workspace.json"),
-    JSON.stringify(workspaceMeta, null, 2),
+    JSON.stringify({ folder: toFileUri(workspacePath) }, null, 2),
     "utf8"
   );
 
@@ -125,21 +122,20 @@ suite("MCP Storage - ide config", () => {
     assert.strictEqual(data.references[0].title, "cursor-snippet");
   });
 
-  test("调用参数 ide 优先级高于工作区配置", () => {
+  test("工作区配置文件优先级高于调用参数 ide", () => {
     const root = createIsolatedRoot();
     setupUserEnv(root);
     const workspacePath = path.join(root, "workspace-b");
     fs.mkdirSync(workspacePath, { recursive: true });
 
+    // 配置文件指定 vscode，同时写入两个 IDE 的数据
     writeWorkspaceConfig(workspacePath, "vscode");
     writeWorkspaceStorageEntry(workspacePath, "vscode", "vscode-snippet");
     writeWorkspaceStorageEntry(workspacePath, "cursor", "cursor-snippet");
 
-    const fromConfig = loadData(workspacePath);
-    assert.strictEqual(fromConfig.references[0].title, "vscode-snippet");
-
-    const fromArg = loadData(workspacePath, "cursor");
-    assert.strictEqual(fromArg.references[0].title, "vscode-snippet");
+    // 即使传入 cursor 参数，配置文件优先，仍读取 vscode 数据
+    const data = loadData(workspacePath, "cursor");
+    assert.strictEqual(data.references[0].title, "vscode-snippet");
   });
 
   test("未传 ide 且无配置文件时默认读取 vscode", () => {
@@ -170,6 +166,19 @@ suite("MCP Storage - ide config", () => {
     );
   });
 
+  test("无配置文件时可通过显式 ide 参数读取数据", () => {
+    const root = createIsolatedRoot();
+    setupUserEnv(root);
+    const workspacePath = path.join(root, "workspace-e");
+    fs.mkdirSync(workspacePath, { recursive: true });
+
+    writeWorkspaceStorageEntry(workspacePath, "vscode", "vscode-only-snippet");
+
+    const data = loadData(workspacePath, "vscode");
+    assert.strictEqual(data.references.length, 1);
+    assert.strictEqual(data.references[0].title, "vscode-only-snippet");
+  });
+
   test("配置文件中 ide 值非法时抛错", () => {
     const root = createIsolatedRoot();
     setupUserEnv(root);
@@ -190,16 +199,52 @@ suite("MCP Storage - ide config", () => {
     );
   });
 
-  test("无配置文件时可通过显式 ide 参数读取数据", () => {
+  test("配置文件中 ide 字段缺失时抛错", () => {
     const root = createIsolatedRoot();
     setupUserEnv(root);
-    const workspacePath = path.join(root, "workspace-e");
+    const workspacePath = path.join(root, "workspace-f");
+    fs.mkdirSync(path.join(workspacePath, ".vscode"), { recursive: true });
+    fs.writeFileSync(
+      path.join(workspacePath, ".vscode", "file-ref-tags.json"),
+      JSON.stringify({}, null, 2),
+      "utf8"
+    );
+
+    assert.throws(
+      () => loadData(workspacePath),
+      (err) =>
+        err instanceof Error &&
+        err.message.includes("缺少") &&
+        err.message.includes("ide")
+    );
+  });
+
+  test("ide=auto 时优先读取 vscode，vscode 无数据则读取 cursor", () => {
+    const root = createIsolatedRoot();
+    setupUserEnv(root);
+    const workspacePath = path.join(root, "workspace-g");
     fs.mkdirSync(workspacePath, { recursive: true });
 
-    writeWorkspaceStorageEntry(workspacePath, "vscode", "vscode-only-snippet");
+    writeWorkspaceConfig(workspacePath, "auto");
+    writeWorkspaceStorageEntry(workspacePath, "cursor", "cursor-auto-snippet");
+    // 不写 vscode 数据，auto 应 fallback 到 cursor
 
-    const data = loadData(workspacePath, "vscode");
+    const data = loadData(workspacePath);
     assert.strictEqual(data.references.length, 1);
-    assert.strictEqual(data.references[0].title, "vscode-only-snippet");
+    assert.strictEqual(data.references[0].title, "cursor-auto-snippet");
+  });
+
+  test("ide=auto 时 vscode 有数据则优先返回 vscode", () => {
+    const root = createIsolatedRoot();
+    setupUserEnv(root);
+    const workspacePath = path.join(root, "workspace-h");
+    fs.mkdirSync(workspacePath, { recursive: true });
+
+    writeWorkspaceConfig(workspacePath, "auto");
+    writeWorkspaceStorageEntry(workspacePath, "vscode", "vscode-auto-snippet");
+    writeWorkspaceStorageEntry(workspacePath, "cursor", "cursor-auto-snippet");
+
+    const data = loadData(workspacePath);
+    assert.strictEqual(data.references[0].title, "vscode-auto-snippet");
   });
 });
