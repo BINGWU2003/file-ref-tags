@@ -13,6 +13,11 @@ File Ref Tags is a VSCode extension for managing and quickly accessing code refe
 - **Add File + Snippet**: Add the current file and selected code snippet to the reference panel
 - **Add Global Snippet**: Add the selected globally unique snippet to the reference panel
 - **Add User Comment**: Add custom comments to the reference panel
+- **Group Management**: Create named groups to organize reference items
+  - Add to last used group / new group
+  - Expand/collapse groups
+  - Drag and drop to reorder groups
+  - Delete group (keep snippets) or delete group with all its snippets
 - **Copy vscode:// Links**: Copy vscode:// protocol links to clipboard with various path formats
   - Snippet only
   - File name only
@@ -20,17 +25,19 @@ File Ref Tags is a VSCode extension for managing and quickly accessing code refe
   - Parent directory + file name + snippet
   - Workspace path + snippet
 - **Keyboard Shortcut**: Quick copy link with `Cmd+Shift+Option+C` (Mac) / `Ctrl+Shift+Alt+C` (Windows/Linux)
+- **Extension Settings**: Click the gear icon in the view title bar to show/hide context menu command groups
 - **Type Color Differentiation**: Different colors for different types of reference items
   - File: Deep blue
   - File + Snippet: Deep pink
   - Global Snippet: Deep purple
   - Comment: Deep green
-- **Drag and Drop Sorting**: Support dragging to reorder reference items
+- **Drag and Drop Sorting**: Support dragging to reorder reference items and groups
 - **Quick Jump**: Click reference items to quickly jump to corresponding locations
 - **Edit Title**: Hover to show edit button, click to modify title in popup
 - **Delete Reference**: Hover to show delete button, click to delete reference items
 - **View Storage Location**: Show the storage location of reference data
 - **External URL Support**: Support vscode:// protocol URL to trigger jump from external software
+- **MCP Server Support**: Let AI agents query saved code snippets via [file-ref-tags-mcp](https://www.npmjs.com/package/file-ref-tags-mcp)
 
 ## Installation
 
@@ -192,6 +199,61 @@ vscode://lirentech.file-ref-tags?snippet=const%20handleUri%20=%20async%20(uri:%2
 ```
 vscode://lirentech.file-ref-tags?filePath=src/extension.ts&snippet=// 注册处理URI的逻辑
 ```
+
+### 5. Extension Settings
+
+Click the ⚙ icon in the view title bar to open extension settings. You can show/hide context menu commands by group:
+
+| Setting | Description |
+|---------|-------------|
+| `showAddCurrentFileCommands` | Show "Add Current File" command group |
+| `showAddSnippetCommands` | Show "Add File + Snippet" command group |
+| `showGlobalUniqueCommands` | Show "Add Global Unique Snippet" command group |
+| `showAddCommentCommands` | Show "Add User Comment" command group |
+| `showCopyLinkCommands` | Show "Copy Link" command group |
+
+### 6. MCP Server (AI Agent Integration)
+
+Use [file-ref-tags-mcp](https://www.npmjs.com/package/file-ref-tags-mcp) to let AI agents like Claude Code and Claude Desktop query saved code snippets.
+
+#### Setup
+
+Add to your MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "file-ref-tags": {
+      "command": "npx",
+      "args": ["file-ref-tags-mcp"]
+    }
+  }
+}
+```
+
+#### IDE Configuration
+
+The MCP Server needs to know which IDE's workspace storage to read from. Use the interactive CLI to initialize:
+
+```bash
+npx file-ref-tags-init
+```
+
+Or manually create `.vscode/file-ref-tags.json`:
+
+```json
+{
+  "ide": "cursor"
+}
+```
+
+Options: `vscode` | `cursor` | `auto`
+
+#### Available Tools
+
+- `list_groups`: List all groups
+- `get_group_snippets`: Get code snippets from a specific group
+- `search_snippets`: Search code snippets by keyword
 
 ## Data Storage
 

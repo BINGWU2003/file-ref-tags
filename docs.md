@@ -118,7 +118,32 @@ vsce package
 pnpm run package && vsce package
 ```
 
-### 3. 发布到 VSCode 扩展市场
+### 4. 构建 MCP Server 和 CLI
+
+构建 MCP Server 和初始化 CLI（输出到 `mcp-server/dist/` 和 `init-cli/dist/`）：
+
+```bash
+pnpm run build:mcp
+```
+
+### 5. 发布 npm 包
+
+```bash
+# 发布 MCP Server
+pnpm run publish:mcp
+
+# 发布初始化 CLI
+pnpm run publish:init
+```
+
+### 6. 初始化工作区 IDE 配置
+
+```bash
+# 构建后运行初始化脚本
+pnpm run init:workspace
+```
+
+### 7. 发布到 VSCode 扩展市场
 
 需要使用 VSCE（VSCode Extension Manager）工具发布扩展：
 
@@ -149,28 +174,45 @@ pnpm run package && vsce package
 ├── .vscode/            # VSCode 配置文件
 ├── resources/          # 资源文件
 ├── src/                # 源代码
-│   ├── test/           # 测试代码
+│   ├── cli/            # CLI 工具
+│   │   └── init.ts     # 工作区初始化脚本
+│   ├── mcp/            # MCP Server
+│   │   ├── server.ts   # MCP 服务端入口
+│   │   ├── storage.ts  # 数据加载与 IDE 配置解析
+│   │   ├── utils.ts    # 工具函数
+│   │   ├── test/       # MCP 单元测试
+│   │   └── tools/      # MCP 工具定义
+│   ├── types/          # 类型定义
+│   ├── view/           # Webview 面板模板
 │   └── extension.ts    # 扩展入口文件
+├── mcp-server/         # file-ref-tags-mcp npm 包
+│   ├── package.json
+│   └── README.md
+├── init-cli/           # file-ref-tags-init npm 包
+│   ├── package.json
+│   └── README.md
 ├── .gitignore          # Git 忽略文件
 ├── CHANGELOG.md        # 更新日志
-├── LICENSE            # 许可证文件
-├── README.md          # 项目说明文档
-├── docs.md            # 开发文档
-├── esbuild.js         # ESBuild 配置
-├── eslint.config.mjs  # ESLint 配置
-├── package.json       # 项目配置
-├── pnpm-lock.yaml     # pnpm 依赖锁文件
-├── tsconfig.json      # TypeScript 配置
+├── LICENSE             # 许可证文件
+├── README.md           # 项目说明文档（英文）
+├── README_zh.md        # 项目说明文档（中文）
+├── docs.md             # 开发文档
+├── esbuild.js          # ESBuild 配置（扩展 + MCP + CLI 多入口）
+├── eslint.config.mjs   # ESLint 配置
+├── package.json        # 项目配置
+├── pnpm-lock.yaml      # pnpm 依赖锁文件
+├── tsconfig.json       # TypeScript 配置
 └── vsc-extension-quickstart.md  # VSCode 扩展快速启动指南
 ```
 
 ## 技术栈
 
 - **开发语言**：TypeScript
-- **构建工具**：ESBuild
+- **构建工具**：ESBuild（多入口：扩展 CJS + MCP Server ESM + CLI ESM）
 - **代码检查**：ESLint
 - **测试框架**：Mocha + VSCode 扩展测试工具
 - **依赖管理**：pnpm
+- **CLI 交互**：@clack/prompts
 
 ## 调试技巧
 

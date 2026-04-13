@@ -1,5 +1,30 @@
 # Change Log
 
+## v0.0.6
+
+- 新增分组管理功能
+  - 添加引用项到上次使用的分组
+  - 添加引用项到新分组（支持自定义分组名称）
+  - 分组展开/折叠
+  - 分组拖拽排序
+  - 删除分组（保留片段）
+  - 删除分组及其所有片段
+- 新增插件设置面板
+  - 在视图标题栏添加设置图标，点击跳转到 `@ext:LiRenTech.file-ref-tags` 设置页
+  - 支持按命令组控制右键菜单项的显示/隐藏
+    - 添加当前文件命令组
+    - 添加文件+片段命令组
+    - 添加全局唯一片段命令组
+    - 添加用户注释命令组
+    - 复制链接命令组
+- 新增 MCP Server（`file-ref-tags-mcp` npm 包）
+  - 支持 AI Agent 查询插件中保存的代码片段
+  - 提供 `list_groups`、`get_group_snippets`、`search_snippets` 三个工具
+  - 支持 Claude Code、Claude Desktop 等 MCP 客户端
+- 新增工作区初始化 CLI（`file-ref-tags-init` npm 包）
+  - 交互式引导选择 IDE（VS Code / Cursor / Auto）
+  - 自动生成 `.vscode/file-ref-tags.json` 配置文件
+
 ## v0.0.5
 
 - 右键位置优化，不再是占用第一个位置了

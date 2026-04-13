@@ -10,6 +10,11 @@ File Ref Tags 是一个 VSCode 扩展插件，用于管理和快速访问代码�
 - **添加文件+片段**：将当前文件和选中的代码片段添加到引用面板
 - **添加全局片段**：将当前选中的全局唯一片段添加到引用面板
 - **添加用户注释**：添加自定义注释到引用面板
+- **分组管理**：创建命名分组，将引用项归类整理
+  - 添加到上次使用的分组 / 新建分组
+  - 分组展开/折叠
+  - 分组拖拽排序
+  - 删除分组（保留片段）或删除分组及其所有片段
 - **复制 vscode:// 链接**：将 vscode:// 协议链接复制到剪贴板，支持多种路径格式
   - 仅代码片段
   - 仅文件名
@@ -17,17 +22,19 @@ File Ref Tags 是一个 VSCode 扩展插件，用于管理和快速访问代码�
   - 父级文件夹+文件名+代码片段
   - 项目级路径+代码片段
 - **快捷键支持**：快速复制链接，快捷键为 `Cmd+Shift+Option+C` (Mac) / `Ctrl+Shift+Alt+C` (Windows/Linux)
+- **插件设置**：点击视图标题栏的设置图标，可按命令组控制右键菜单项的显示/隐藏
 - **类型颜色区分**：不同类型的引用项显示不同颜色
   - 文件：深蓝色
   - 文件+片段：深粉色
   - 全局片段：深紫色
   - 注释：深绿色
-- **拖拽排序**：支持拖拽调整引用项顺序
+- **拖拽排序**：支持拖拽调整引用项和分组顺序
 - **快速跳转**：点击引用项快速跳转到对应位置
 - **编辑标题**：鼠标悬浮显示编辑按钮，点击弹窗修改标题
 - **删除引用**：鼠标悬浮显示删除按钮，点击删除引用项
 - **查看存储位置**：显示引用数据的存储位置
 - **外部 URL 支持**：支持 vscode:// 协议 URL 从外部软件触发跳转
+- **MCP Server 支持**：通过 [file-ref-tags-mcp](https://www.npmjs.com/package/file-ref-tags-mcp) 让 AI Agent 查询代码片段
 
 ## 安装方法
 
@@ -189,6 +196,61 @@ vscode://lirentech.file-ref-tags?snippet=const%20handleUri%20=%20async%20(uri:%2
 ```
 vscode://lirentech.file-ref-tags?filePath=src/extension.ts&snippet=// 注册处理URI的逻辑
 ```
+
+### 5. 插件设置
+
+点击引用面板标题栏右侧的 ⚙ 图标，打开插件设置页面。可以按命令组控制右键菜单中各命令的显示/隐藏：
+
+| 设置项 | 说明 |
+|--------|------|
+| `showAddCurrentFileCommands` | 显示「添加当前文件」命令组 |
+| `showAddSnippetCommands` | 显示「添加文件+片段」命令组 |
+| `showGlobalUniqueCommands` | 显示「添加全局唯一片段」命令组 |
+| `showAddCommentCommands` | 显示「添加用户注释」命令组 |
+| `showCopyLinkCommands` | 显示「复制链接」命令组 |
+
+### 6. MCP Server（AI Agent 集成）
+
+通过 [file-ref-tags-mcp](https://www.npmjs.com/package/file-ref-tags-mcp) 让 Claude Code、Claude Desktop 等 AI Agent 查询插件中保存的代码片段。
+
+#### 安装配置
+
+在 MCP 客户端配置中添加：
+
+```json
+{
+  "mcpServers": {
+    "file-ref-tags": {
+      "command": "npx",
+      "args": ["file-ref-tags-mcp"]
+    }
+  }
+}
+```
+
+#### IDE 配置
+
+MCP Server 需要知道从哪个 IDE 读取数据。推荐使用交互式 CLI 初始化：
+
+```bash
+npx file-ref-tags-init
+```
+
+或手动创建 `.vscode/file-ref-tags.json`：
+
+```json
+{
+  "ide": "cursor"
+}
+```
+
+可选值：`vscode` | `cursor` | `auto`
+
+#### 可用工具
+
+- `list_groups`：列出所有分组
+- `get_group_snippets`：获取指定分组下的代码片段
+- `search_snippets`：按关键词搜索代码片段
 
 ## 数据存储
 
