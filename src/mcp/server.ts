@@ -5,7 +5,7 @@
  * 工具调用时传入 workspacePath（项目根目录），server 自动定位对应的 references.json。
  */
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
@@ -16,16 +16,16 @@ import { TOOLS } from "./tools/index.js";
 
 // ── MCP Server ────────────────────────────────────────────────────────────────
 
-const server = new Server(
-  { name: "file-ref-tags", version: "1.0.0" },
+const server = new McpServer(
+  { name: "file-ref-tags", version: "1.0.5" },
   { capabilities: { tools: {} } }
 );
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
+server.server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: TOOLS.map((t) => t.definition),
 }));
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   const typedArgs = (args ?? {}) as Record<string, unknown>;
 
